@@ -1,2 +1,6 @@
 telas-figma/
 .claude/
+.vercel/
+
+.vercel
+.env*
