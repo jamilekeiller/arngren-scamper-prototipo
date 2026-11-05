@@ -1135,7 +1135,11 @@
 
 <script>
 // ---------------- Dados (imagens carregadas do próprio arngren.net) ----------------
-const IMG = f => "https://arngren.net/sitebuilder/images/" + f;
+// Fotos: vêm do arngren.net; se o site estiver fora do ar, usa as cópias do Internet Archive
+const ARN_BASE = "https://arngren.net/sitebuilder/images/";
+const ARCHIVE = u => "https://web.archive.org/web/2026id_/" + u;
+let ARN_DOWN = false;
+const IMG = f => ARN_DOWN ? ARCHIVE(ARN_BASE + f) : ARN_BASE + f;
 
 const CATEGORIES = {
   "Bicicletas Elétricas": ["Dobráveis", "Fatbikes", "Triciclos e cargo", "Urbanas"],
@@ -1196,7 +1200,7 @@ const P = [
   { id:45, name:"Monopoly Edição de Colecionador", cat:"Hobby & Colecionáveis", sub:"Colecionáveis", brand:"Hasbro", price:890, stock:true, img:"Figur-STARWARS-MONOPOL.HG42452lg-108x81.jpg", tags:[], interests:["Entretenimento"], specs:{"Jogadores":"2–6","Peças":"Miniaturas","Idade":"8+"}, acc:[], rare:"Edição de colecionador", desc:"Edição especial com peças em miniatura detalhadas." },
   { id:46, name:"Roboraptor", cat:"Hobby & Colecionáveis", sub:"Colecionáveis", brand:"WowWee", price:990, stock:true, img:"Roboraptor.0.1425.sz.102575.00-87x50.jpg", tags:[], interests:["Tecnologia","Entretenimento"], specs:{"Modos":"3 humores","Controle":"Remoto","Sensores":"Toque e som","Idade":"8+"}, acc:[], rare:"Clássico dos anos 2000", desc:"Dinossauro robô clássico com movimentos realistas." }
 ];
-P.forEach(p => p.src = IMG(p.img));
+P.forEach(p => Object.defineProperty(p, "src", { get: () => IMG(p.img), enumerable: true }));
 
 // A — atributos para filtros inteligentes e assistente: [tamanho, potência (W), finalidades]
 const PURPOSES = ["Transporte diário", "Lazer e trilha", "Para crianças", "Casa e jardim", "Aprender e explorar", "Diversão e presentes"];
@@ -2220,7 +2224,9 @@ function photoFallback(label) {
 }
 document.addEventListener("error", e => {
   const img = e.target;
-  if (img && img.tagName === "IMG" && !img.dataset.fb) { img.dataset.fb = "1"; img.src = photoFallback(img.alt); }
+  if (!img || img.tagName !== "IMG" || img.dataset.fb) return;
+  if (img.src.startsWith("https://arngren.net/")) { img.src = ARCHIVE(img.src); return; }   // 1ª alternativa: Internet Archive
+  img.dataset.fb = "1"; img.src = photoFallback(img.alt);                                   // 2ª alternativa: foto substituta
 }, true);
 
 // =====================================================================
@@ -2667,12 +2673,30 @@ function watchSlowImages() {
   document.querySelectorAll("img").forEach(img => {
     if (img.dataset.fb || (img.complete && img.naturalWidth)) return;
     if (!img.src || img.src.startsWith("data:")) return;
-    if (img.loading === "lazy" && !img.getBoundingClientRect().width) return;
+    const r = img.getBoundingClientRect();
+    if (!r.width || r.bottom < -600 || r.top > innerHeight + 600) { delete img.dataset.t0; return; }   // fora da tela: ainda não carregou
     if (!img.dataset.t0 || img.dataset.src0 !== img.src) { img.dataset.t0 = now; img.dataset.src0 = img.src; return; }
-    if (now - img.dataset.t0 > 6000) { img.dataset.fb = "1"; img.src = photoFallback(img.alt); }
+    const wait = now - img.dataset.t0;
+    if (img.src.startsWith("https://arngren.net/") && wait > 4000) img.src = ARCHIVE(img.src);
+    else if (wait > 15000) { img.dataset.fb = "1"; img.src = photoFallback(img.alt); }
   });
 }
+function probeArngren() {
+  let done = false;
+  const fail = () => {
+    if (done) return; done = true; ARN_DOWN = true;
+    document.querySelectorAll("img").forEach(i => {
+      if (i.src.startsWith("https://arngren.net/") && !(i.complete && i.naturalWidth)) i.src = ARCHIVE(i.src);
+    });
+  };
+  const t = new Image();
+  t.onload = () => { done = true; };
+  t.onerror = fail;
+  setTimeout(fail, 3500);
+  t.src = ARN_BASE + "elsykkel-SAMMENLEGGBAR-9T_7TK29F-247x186.jpg?probe=" + Date.now();
+}
 function initExtras() {
+  probeArngren();
   setInterval(watchSlowImages, 2000);
   if (/embed/.test(location.search)) document.body.classList.add("embed");
   document.querySelectorAll(".ico-slot").forEach(e => e.innerHTML = ICON[e.dataset.ico]);
