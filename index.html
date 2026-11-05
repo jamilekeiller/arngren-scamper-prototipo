@@ -1109,7 +1109,7 @@
   <div class="win-title"><span><span class="mascot-slot"></span> Volt, assistente ARNGREN — <span style="color:#99c2ff">● online</span></span><button class="win-close" onclick="closeChat()" aria-label="Fechar">×</button></div>
   <div class="chat-log" id="chatLog" aria-live="polite"></div>
   <div class="chat-sugg" id="chatSugg"></div>
-  <form class="chat-form" onsubmit="sendChat(event)"><input id="chatInput" placeholder="Ex.: bike para o trabalho até 10 mil" autocomplete="off" aria-label="Mensagem para o assistente"><button class="btn btn-blue">Enviar</button></form>
+  <form class="chat-form" onsubmit="sendChat(event)"><input id="chatInput" placeholder="Ex.: bicicleta para o trabalho até 10 mil" autocomplete="off" aria-label="Mensagem para o assistente"><button class="btn btn-blue">Enviar</button></form>
 </div>
 
 <div class="xp-loading" id="xpLoading" hidden><div class="xp-box"><b>Carregando...</b><div class="xp-bar"><span></span></div></div></div>
@@ -1982,14 +1982,14 @@ const AI = {
   purpose: [
     [/trabalh|cidade|transport|desloc|faculdade|escola|ir e voltar|diári/, "Transporte diário"],
     [/trilha|passei|lazer|neve|areia|aventura|fim de semana/, "Lazer e trilha"],
-    [/criança|filh|infantil|net[oa]|kids|menin/, "Para crianças"],
-    [/jardim|grama|fazenda|sítio|quintal/, "Casa e jardim"],
-    [/aprend|program|educa|estud|céu|estrela|lua|planeta|viage/, "Aprender e explorar"],
+    [/criança|filh|infantil|\bnet[oa]s?\b|kids|menin/, "Para crianças"],
+    [/jardim|\bgrama\b|gramado|fazenda|sítio|quintal/, "Casa e jardim"],
+    [/aprend|program|educa|estud|céu|estrela|\blua\b|planeta|viage/, "Aprender e explorar"],
     [/presente|brinquedo|divers|jogar|brincar/, "Diversão e presentes"]
   ],
   cat: [
     [/bicicleta|bike|elsykkel|pedal/, "Bicicletas Elétricas"],
-    [/scooter|moped|moto/, "Scooters & Mopeds"],
+    [/scooter|moped|\bmotos?\b|motoneta/, "Scooters & Mopeds"],
     [/carr(o|inho) elétric|jipe|jeep|kart/, "Carros Elétricos Infantis"],
     [/quadriciclo|\batv\b|trator|cortador/, "ATV & Jardim"],
     [/robô|robo|\brc\b|controle remoto|tanque/, "Robôs & RC"],
@@ -2003,14 +2003,14 @@ const AI = {
 };
 let chatStarted = false, lastNeed = null;
 const escapeHTML = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const DEFAULT_SUGG = ["Bike para ir ao trabalho até 10 mil", "Presente para criança até 5000", "Algo para o jardim", "Quero aprender programação", "Scooter potente"];
+const DEFAULT_SUGG = ["Bicicleta para o trabalho até 10 mil", "Presente para criança até 5 mil", "Algo para o jardim", "Quero aprender programação", "Scooter potente", "Como funciona a garantia?"];
 
 function openChat() {
   document.getElementById("chat").classList.add("show");
   document.getElementById("aiFab").hidden = true;
   if (!chatStarted) {
     chatStarted = true;
-    botSay(`Olá! Eu sou o <b>Volt</b>, assistente virtual da ARNGREN.<br>Me conte <b>para que</b> você precisa, <b>quanto</b> quer gastar e, se quiser, o <b>tamanho</b> ou a <b>potência</b>. Eu encontro os produtos certos.<br><small style="color: #595959">(Protótipo: respostas simuladas por regras.)</small>`, 300);
+    botSay(`Olá! Eu sou o <b>Volt</b>, o assistente virtual da ARNGREN. 👋<br>Conte o que você procura, <b>para que vai usar</b> e <b>quanto quer gastar</b>. Se quiser, diga também o tamanho ou a potência. Eu separo as melhores opções para você.<br>Também tiro dúvidas sobre <b>entrega, garantia, trocas e pagamento</b>.<br><small style="color:#595959">Protótipo: as respostas seguem regras simples, sem uma IA real por trás.</small>`, 300);
     setSugg(DEFAULT_SUGG);
   }
   setTimeout(() => document.getElementById("chatInput").focus(), 50);
@@ -2023,7 +2023,7 @@ function addMsg(who, html) {
 }
 function botSay(html, delay) {
   const log = document.getElementById("chatLog");
-  log.insertAdjacentHTML("beforeend", `<div class="msg bot typing" id="typing"><i>Assistente está digitando...</i></div>`);
+  log.insertAdjacentHTML("beforeend", `<div class="msg bot typing" id="typing"><i>Volt está digitando...</i></div>`);
   log.scrollTop = log.scrollHeight;
   setTimeout(() => { const t = document.getElementById("typing"); if (t) t.remove(); addMsg("bot", html); }, delay === undefined ? 700 : delay);
 }
@@ -2055,39 +2055,61 @@ function findFor(need) {
     (!need.minPower || (p.power || 0) >= need.minPower))
   .sort((a, b) => b.stock - a.stock || b.tags.includes("best") - a.tags.includes("best") || (need.max ? b.price - a.price : a.price - b.price));
 }
+const CAT_PHRASE = { "Bicicletas Elétricas": "bicicletas elétricas", "Scooters & Mopeds": "scooters e mopeds", "Carros Elétricos Infantis": "carros elétricos infantis",
+  "ATV & Jardim": "quadriciclos e itens para jardim", "Robôs & RC": "robôs e controle remoto", "Óptica & Gadgets": "óptica e gadgets",
+  "Hobby & Colecionáveis": "hobby e colecionáveis", "Acessórios": "acessórios" };
+const PURPOSE_PHRASE = { "Transporte diário": "para o dia a dia", "Lazer e trilha": "para lazer e trilhas", "Para crianças": "para crianças",
+  "Casa e jardim": "para casa e jardim", "Aprender e explorar": "para aprender e explorar", "Diversão e presentes": "para diversão ou presente" };
 function summary(need) {
-  const parts = [];
-  if (need.cat) parts.push(`categoria <b>${need.cat}</b>`);
-  if (need.purpose) parts.push(`finalidade <b>${need.purpose}</b>`);
-  if (need.max) parts.push(`até <b>${fmt(need.max)}</b>`);
-  if (need.size) parts.push(`tamanho <b>${need.size}</b>`);
-  if (need.minPower) parts.push(`potência a partir de <b>${need.minPower} W</b>`);
-  return parts.join(", ");
+  let txt = `<b>${need.cat ? CAT_PHRASE[need.cat] : "produtos"}</b>`;
+  if (need.purpose) txt += ` <b>${PURPOSE_PHRASE[need.purpose]}</b>`;
+  const extra = [];
+  if (need.size) extra.push(`tamanho <b>${need.size.toLowerCase()}</b>`);
+  if (need.minPower) extra.push(`com pelo menos <b>${need.minPower} W</b>`);
+  if (need.max) extra.push(`até <b>${fmt(need.max)}</b>`);
+  return txt + (extra.length ? ", " + extra.join(", ") : "");
 }
 function aiProd(p) {
   return `<div class="ai-prod"><span class="imgbox"><img src="${p.src}" alt=""></span><div><b>${p.name}</b><br>
     <span class="price" style="font-size:12px">${fmt(p.price)}</span> ${p.stock ? "" : '<span class="stock no">esgotado</span>'}<br>
     <button class="link-btn" onclick="openProduct(${p.id})">ver detalhes</button>${p.stock ? ` · <button class="link-btn" onclick="addToCart(${p.id})">comprar</button>` : ""}</div></div>`;
 }
+// Perguntas frequentes (atendimento)
+const FAQ = [
+  [/garantia|defeito|estragou|quebrou|parou de funcionar/, "Todos os produtos têm <b>garantia de satisfação</b>. Se algo apresentar defeito, envie o número do pedido pela <b>página de Contato</b> e nossa equipe organiza a troca ou o reparo. Dúvidas técnicas também podem ir para o <b>Fórum de suporte</b>."],
+  [/entrega|frete|prazo|chega|envio|enviar/, "O frete é <b>grátis acima de kr 5 000</b>. Produtos em estoque são enviados em até <b>24 horas</b>, e o prazo final depende do seu endereço. Você vê o valor e o prazo ao informar o CEP no carrinho."],
+  [/troca|trocar|devolu|devolver|arrependi/, "Você tem <b>30 dias</b> para trocar ou devolver. Basta abrir um pedido de troca pela <b>página de Contato</b>, informando o número do pedido."],
+  [/pagamento|pagar|pix|cart[aã]o|boleto|parcel/, "Aceitamos <b>cartão, Pix e boleto</b>. Tudo é feito em uma única tela no carrinho, sem cadastro obrigatório."],
+  [/hor[aá]rio|atendimento|telefone|falar com|contato|humano|atendente/, "Nosso atendimento funciona de <b>segunda a sexta, das 9h às 17h</b>, e aos <b>sábados, das 10h às 14h</b>. Fora desse horário, deixe sua mensagem pelo formulário na página de Contato."]
+];
+const PLURAL = (n, um, varios) => n === 1 ? um : varios;
+
 function answer(text) {
   const t = text.toLowerCase();
-  if (/obrigad|valeu/.test(t)) return "Por nada! Se precisar de mais alguma coisa, é só chamar. 😉";
+  if (/obrigad|valeu|brigad/.test(t)) return "Por nada! Se precisar de mais alguma coisa, é só chamar. 😉";
+  for (const [rx, resp] of FAQ) if (rx.test(t)) return resp;
+
   let need;
-  if (/mais barat/.test(t) && lastNeed) {
+  if (/mais barat|menor pre[cç]o|economi/.test(t)) {
+    if (!lastNeed) return "Claro! Primeiro me diga o que você procura, por exemplo: <i>“scooter até 15 mil”</i>. Aí eu busco as opções mais em conta.";
     const l = findFor(lastNeed);
     need = { ...lastNeed, max: l.length ? l[0].price - 1 : lastNeed.max };
   } else {
     need = parseNeed(text);
     if (lastNeed && Object.keys(need).length && !need.purpose && !need.cat) need = { ...lastNeed, ...need };
   }
+
   if (!Object.keys(need).length) {
-    if (/^(oi|olá|ola|bom dia|boa tarde|boa noite|e aí|hello)/.test(t)) return "Olá! 👋 O que você está procurando hoje? Ex.: <i>“bicicleta dobrável até 10 mil”</i>.";
+    if (/^(oi|olá|ola|bom dia|boa tarde|boa noite|e aí|e ai|hello|hey)/.test(t))
+      return "Olá! 👋 O que você está procurando hoje? Por exemplo: <i>“bicicleta dobrável até 10 mil”</i>.";
     const words = t.split(/[^a-zà-ú0-9]+/).filter(w => w.length > 3);
     const hits = P.filter(p => words.some(w => (p.name + " " + p.desc).toLowerCase().includes(w)));
-    if (hits.length) return `Encontrei estes produtos relacionados a “${escapeHTML(text)}”:` + hits.slice(0, 3).map(aiProd).join("");
+    if (hits.length)
+      return `Encontrei ${PLURAL(Math.min(hits.length, 3), "este produto relacionado", "estes produtos relacionados")} a “${escapeHTML(text)}”:` + hits.slice(0, 3).map(aiProd).join("");
     setSugg(DEFAULT_SUGG);
-    return "Hmm, não entendi bem. 🤔 Pode me dizer <b>para que vai usar</b> (trabalho, lazer, criança, jardim, aprender...) e <b>quanto quer gastar</b>?";
+    return "Não consegui entender o pedido. 🤔 Pode me dizer <b>para que vai usar</b> (trabalho, lazer, crianças, jardim, aprender...) e <b>quanto quer gastar</b>?";
   }
+
   lastNeed = need;
   let list = findFor(need), relaxed = "", used = need;
   if (!list.length) {
@@ -2098,15 +2120,32 @@ function answer(text) {
       if (l2.length) { list = l2; relaxed = k; used = n2; break; }
     }
   }
+  // prioriza produtos cujo nome/descrição têm as palavras do pedido (ex.: "programação" → robôs)
+  const qw = t.split(/[^a-zà-ú0-9]+/).filter(w => w.length > 4).map(w => w.slice(0, 6));
+  if (qw.length) {
+    const score = p => qw.filter(w => (p.name + " " + p.desc + " " + p.sub).toLowerCase().includes(w)).length;
+    list = [...list].sort((a, b) => score(b) - score(a));
+  }
   setSugg(["Mais barato", "Algo compacto", "Mais potente", "Para crianças", "Para o trabalho"]);
   const sum = summary(need);
-  if (!list.length) return `Entendi: ${sum}. Infelizmente não encontrei nada com esse orçamento. 😕 Quer tentar um valor um pouco maior?`;
-  const names = { size: "tamanho", minPower: "potência", purpose: "finalidade", cat: "categoria" };
+
+  if (!list.length) {
+    const semPreco = findFor({ ...need, max: undefined });
+    if (need.max && semPreco.length) {
+      const menor = semPreco.reduce((a, b) => (a.price < b.price ? a : b));
+      return `Procurei ${sum}, mas nada cabe nesse orçamento. 😕 A opção mais em conta custa <b>${fmt(menor.price)}</b>:` + aiProd(menor);
+    }
+    return `Procurei ${sum}, mas não encontrei nada parecido. 😕 Tente descrever de outro jeito ou escolha uma das sugestões abaixo.`;
+  }
+
+  const names = { size: "o tamanho", minPower: "a potência", purpose: "a finalidade", cat: "a categoria" };
+  const n = list.length, shown = Math.min(n, 3);
   const intro = relaxed
-    ? `Não encontrei nada com <b>todos</b> os critérios (${sum}), mas sem o critério de <b>${names[relaxed]}</b> estas opções chegam perto:`
-    : `Entendi: ${sum}. Encontrei <b>${list.length}</b> opção(ões). Minhas sugestões:`;
+    ? `Não encontrei ${sum} com todos esses critérios. Mas, sem considerar <b>${names[relaxed]}</b>, ${PLURAL(shown, "esta opção chega perto", "estas opções chegam perto")}:`
+    : `Procurando ${sum}, encontrei <b>${n}</b> ${PLURAL(n, "opção", "opções")}. ${PLURAL(shown, "Minha sugestão", "Minhas sugestões")}:`;
+  const more = n > 1 ? `Ver ${PLURAL(n, "o produto", "os " + n + " produtos")} na loja »` : "Ver na loja »";
   return intro + list.slice(0, 3).map(aiProd).join("") +
-    `<p style="margin-top:6px"><button class="btn btn-blue" onclick='applyNeed(${JSON.stringify(used)})'>Ver todos os ${list.length} na loja »</button></p>`;
+    `<p style="margin-top:6px"><button class="btn btn-blue" onclick='applyNeed(${JSON.stringify(used)})'>${more}</button></p>`;
 }
 function applyNeed(need) {
   setMode("shop"); resetFilters(true);
