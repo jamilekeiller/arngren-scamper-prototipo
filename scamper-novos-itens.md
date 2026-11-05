@@ -34,7 +34,7 @@ Cole cada frase na letra indicada. Estão no mesmo formato do documento:
 ## Reorganizar ou Reverter (R)
 
 * **Reorganizar a página de produto em abas:** Separar o conteúdo em Descrição e acessórios, Ficha técnica e comparação, Avaliações, Guias de montagem e Dúvidas, colocando a ajuda da comunidade dentro da própria página do produto.
-* **Reorganizar a página inicial com banner rotativo e atalhos de categoria:** Substituir os banners soltos por um carrossel com os principais destaques e criar atalhos com foto para cada categoria.
+* **Reorganizar a página inicial com banner rotativo:** Substituir os banners soltos por um carrossel com os principais destaques.
 
 ---
 

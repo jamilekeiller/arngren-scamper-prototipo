@@ -1003,7 +1003,6 @@
         <div class="dots" id="dots"></div>
         <span class="sc" style="position:absolute;top:4px;right:40px;z-index:4">R · Banner rotativo</span>
       </div>
-      <div class="cat-shortcuts sc-box" id="catShortcuts"></div>
 
       <div class="interests sc-box" id="interests"><strong>Meu interesse é:</strong></div>
 
@@ -1359,7 +1358,7 @@ function applyFilters(titleOverride) {
   const active = q || cats.length || brands.length || onlyStock || onlyMulti || sort !== "rel" || max < +fp.max || currentSub || quick || budget || purpose || size || power;
 
   document.getElementById("homeSections").hidden = !!active;
-  document.getElementById("hero").hidden = !!active; document.getElementById("catShortcuts").hidden = !!active;
+  document.getElementById("hero").hidden = !!active;
   document.getElementById("resultsBlock").hidden = !active;
   if (!active) { renderHome(); setCrumb(""); return; }
 
@@ -2739,7 +2738,6 @@ const TOUR = [
   { sel: "nav.cats", L: "R · S", t: "Menu único de categorias", d: "Categorias e subcategorias organizadas, com a categoria atual destacada." },
   { sel: ".perks", L: "C", t: "Faixa de vantagens", d: "Frete, garantia, trocas e suporte reunidos em um só lugar." },
   { sel: "#hero", L: "R", t: "Banner rotativo", d: "Destaques organizados, no lugar de banners soltos e piscantes." },
-  { sel: "#catShortcuts", L: "R", t: "Atalhos por categoria", d: "Entrada visual e rápida para cada categoria." },
   { sel: ".filters", L: "M · A", t: "Busca inteligente", d: "Filtros por preço, orçamento, finalidade, tamanho, potência, marca e estoque." },
   { sel: "#interests", L: "C · A", t: "Interesses e modo de exibição", d: "Produtos por interesse e alternância entre grade e lista." },
   { sel: "#recoBox", L: "A", t: "Recomendações inteligentes", d: "Sugestões com base no histórico de navegação e nas preferências." },
@@ -2829,7 +2827,7 @@ function initExtras() {
   if (/embed/.test(location.search)) document.body.classList.add("embed");
   document.querySelectorAll(".ico-slot").forEach(e => e.innerHTML = ICON[e.dataset.ico]);
   document.querySelectorAll(".mascot-slot").forEach(e => e.innerHTML = MASCOT);
-  renderSlides(); renderCatShortcuts();
+  renderSlides();
   tickCountdown(); setInterval(tickCountdown, 1000);
   applyPrefs();
 }
