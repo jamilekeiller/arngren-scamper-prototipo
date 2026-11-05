@@ -19,6 +19,8 @@ Cole cada frase na letra indicada. Estão no mesmo formato do documento:
 
 * **Adaptar a barra de compra fixa usada pelos aplicativos de loja:** Ao rolar a página de um produto, manter visíveis a foto, o nome, o preço e o botão "Comprar" em uma barra fixa na parte de baixo.
 * **Adaptar a interface às preferências do usuário com o modo escuro:** Permitir alternar entre tema claro e escuro, mantendo o contraste adequado.
+* **Adaptar o site a outros idiomas:** Incluir um seletor de idiomas (português, inglês e norueguês) no topo da página, traduzindo menus, categorias, produtos, páginas e o assistente virtual, para atender visitantes de outros países.
+* **Adaptar os preços à moeda local:** Exibir os preços automaticamente na moeda correspondente ao idioma escolhido — real (R$) em português, dólar (US$) em inglês e coroa norueguesa (kr) em norueguês —, convertendo também filtros de orçamento, frete grátis, carrinho e as respostas do assistente. Assim o cliente entende o valor sem precisar fazer contas de câmbio.
 
 ## Modificar (M)
 

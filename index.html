@@ -1229,7 +1229,25 @@ const EXTRA = {
 P.forEach(p => { const [size, power, purpose] = EXTRA[p.id]; Object.assign(p, { size, power, purpose }); });
 P.find(p => p.id === 18).rare = "Clássico dos anos 2000 — fora de linha";
 const byId = id => P.find(p => p.id === id);
-const fmt = v => "kr " + v.toLocaleString("nb-NO") + ",-";
+const fmt = v => "kr " + v.toLocaleString("nb-NO") + ",-";   // preço-base: coroa norueguesa (NOK)
+
+// A — Preços na moeda local: o catálogo continua em NOK e a exibição converte conforme o idioma.
+// Taxas fixas de referência para o protótipo (atualize aqui se quiser outros valores).
+const CURRENCY = {
+  pt: { code: "BRL", rate: 0.50, show: v => "R$ " + v.toLocaleString("pt-BR") },
+  en: { code: "USD", rate: 0.092, show: v => "US$ " + v.toLocaleString("en-US") },
+  no: { code: "NOK", rate: 1, show: v => "kr " + v.toLocaleString("nb-NO") + ",-" }
+};
+const curr = () => CURRENCY[typeof LANG === "string" ? LANG : "pt"];
+const money = nok => curr().show(Math.round(nok * curr().rate));
+const toNOK = local => Math.round(local / curr().rate);
+const KR_NUM = "(\\d[\\d\\s\\u00a0\\u202f]*\\d|\\d)";
+function convertPrices(str) {
+  if (!str || curr().code === "NOK" || !/kr/.test(str)) return str;
+  const n = a => +a.replace(/\D/g, "");
+  str = str.replace(new RegExp("kr[\\s\\u00a0]?" + KR_NUM + "[\\s\\u00a0]?–[\\s\\u00a0]?" + KR_NUM, "g"), (m, a, b) => money(n(a)) + " – " + money(n(b)));
+  return str.replace(new RegExp("kr[\\s\\u00a0\\u202f]?" + KR_NUM + "(,-)?", "g"), (m, a) => money(n(a)));
+}
 
 // ---------------- Estado ----------------
 let cart = [], compare = [], interest = null, currentSub = null, quick = null, magIdx = 0;
@@ -1966,7 +1984,7 @@ function similarTable(p) {
   if (keys.includes("Autonomia")) {
     const cb = items.filter(x => !isNaN(num(x.specs.Autonomia)))
       .sort((a, b) => num(b.specs.Autonomia) / b.price - num(a.specs.Autonomia) / a.price)[0];
-    if (cb) verdict += ` Melhor custo-benefício (autonomia por coroa): <b>${cb.name}</b>.`;
+    if (cb) verdict += ` Melhor custo-benefício (autonomia por preço): <b>${cb.name}</b>.`;
   }
   return `<div class="sc-box">
     <div class="section-sub">Comparação automática com produtos semelhantes <span class="sc">A · Comparação de preços</span></div>
@@ -2072,6 +2090,7 @@ function parseNeed(text) {
     else if (/^w/.test(u)) need.minPower = v;
     else if (!u && v >= 100) need.max = v;
   }
+  if (need.max) need.max = toNOK(need.max);   // orçamento dito na moeda local → coroas
   if (/potente|forte|rápid|veloz|powerful|strong|\bfast|kraftig|sterk|rask/.test(t) && !need.minPower) need.minPower = 1000;
   for (const [k, rules] of Object.entries(AI)) for (const [rx, val] of rules) if (rx.test(t)) { need[k] = val; break; }
   return need;
@@ -2102,12 +2121,12 @@ function summary(need) {
   const extra = [];
   if (need.size) extra.push(TL("tamanho", "size", "størrelse") + ` <b>${(tr(need.size) || need.size).toLowerCase()}</b>`);
   if (need.minPower) extra.push(TL("com pelo menos", "at least", "minst") + ` <b>${need.minPower} W</b>`);
-  if (need.max) extra.push(TL("até", "up to", "opptil") + ` <b>${fmt(need.max)}</b>`);
+  if (need.max) extra.push(TL("até", "up to", "opptil") + ` <b>${money(need.max)}</b>`);
   return txt + (extra.length ? ", " + extra.join(", ") : "");
 }
 function aiProd(p) {
   return `<div class="ai-prod"><span class="imgbox"><img src="${p.src}" alt=""></span><div><b>${tr(p.name)}</b><br>
-    <span class="price" style="font-size:12px">${fmt(p.price)}</span> ${p.stock ? "" : `<span class="stock no">${TL("esgotado", "sold out", "utsolgt")}</span>`}<br>
+    <span class="price" style="font-size:12px">${money(p.price)}</span> ${p.stock ? "" : `<span class="stock no">${TL("esgotado", "sold out", "utsolgt")}</span>`}<br>
     <button class="link-btn" onclick="openProduct(${p.id})">${TL("ver detalhes", "see details", "se detaljer")}</button>${p.stock ? ` · <button class="link-btn" onclick="addToCart(${p.id})">${TL("comprar", "buy", "kjøp")}</button>` : ""}</div></div>`;
 }
 
@@ -2139,7 +2158,7 @@ const PLURAL = (n, um, varios) => n === 1 ? um : varios;
 function answer(text) {
   const t = text.toLowerCase();
   if (/obrigad|valeu|brigad|thank|\btakk/.test(t)) return TL("Por nada! Se precisar de mais alguma coisa, é só chamar. 😉", "You're welcome! Just call me if you need anything else. 😉", "Bare hyggelig! Si fra hvis du trenger noe mer. 😉");
-  for (const [rx, resp] of FAQ) if (rx.test(t)) return resp();
+  for (const [rx, resp] of FAQ) if (rx.test(t)) return convertPrices(resp());
 
   let need;
   if (/mais barat|menor pre[cç]o|economi|cheap|less expensive|billig/.test(t)) {
@@ -2195,9 +2214,9 @@ function answer(text) {
     const semPreco = findFor({ ...need, max: undefined });
     if (need.max && semPreco.length) {
       const menor = semPreco.reduce((a, b) => (a.price < b.price ? a : b));
-      return TL(`Procurei ${sum}, mas nada cabe nesse orçamento. 😕 A opção mais em conta custa <b>${fmt(menor.price)}</b>:`,
-        `I looked for ${sum}, but nothing fits that budget. 😕 The cheapest option costs <b>${fmt(menor.price)}</b>:`,
-        `Jeg lette etter ${sum}, men ingenting passer budsjettet. 😕 Det rimeligste alternativet koster <b>${fmt(menor.price)}</b>:`) + aiProd(menor);
+      return TL(`Procurei ${sum}, mas nada cabe nesse orçamento. 😕 A opção mais em conta custa <b>${money(menor.price)}</b>:`,
+        `I looked for ${sum}, but nothing fits that budget. 😕 The cheapest option costs <b>${money(menor.price)}</b>:`,
+        `Jeg lette etter ${sum}, men ingenting passer budsjettet. 😕 Det rimeligste alternativet koster <b>${money(menor.price)}</b>:`) + aiProd(menor);
     }
     return TL(`Procurei ${sum}, mas não encontrei nada parecido. 😕 Tente descrever de outro jeito ou escolha uma das sugestões abaixo.`,
       `I looked for ${sum}, but couldn't find anything similar. 😕 Try describing it differently or pick one of the suggestions below.`,
@@ -2899,7 +2918,7 @@ const I18N = {
   "Com uma carga você faz": ["One charge lasts", "Én lading holder til"], "de trajeto": ["of trips", "med turer"], "recargas por semana (5 dias):": ["charges per week (5 days):", "ladinger per uke (5 dager):"],
   "no inverno, cerca de": ["in winter, about", "om vinteren ca."], "por carga.": ["per charge.", "per lading."],
   "Este produto": ["This product", "Dette produktet"], "Comparação automática com produtos semelhantes": ["Automatic comparison with similar products", "Automatisk sammenligning med lignende produkter"],
-  "Mais barato:": ["Cheapest:", "Billigst:"], "Melhor custo-benefício (autonomia por coroa):": ["Best value (range per krone):", "Best verdi (rekkevidde per krone):"], "Abrir na comparação completa": ["Open full comparison", "Åpne full sammenligning"],
+  "Mais barato:": ["Cheapest:", "Billigst:"], "Melhor custo-benefício (autonomia por preço):": ["Best value (range for the price):", "Best verdi (rekkevidde per krone):"], "Abrir na comparação completa": ["Open full comparison", "Åpne full sammenligning"],
   "Edição de colecionador": ["Collector's edition", "Samleutgave"], "Catálogo ARNGREN": ["ARNGREN Catalogue", "ARNGREN-katalog"], "Vitrine ARNGREN": ["ARNGREN Showcase", "ARNGREN-monter"],
   "Item raro de colecionador": ["Rare collector's item", "Sjeldent samleobjekt"], "Edição limitada, numerada": ["Limited, numbered edition", "Begrenset, nummerert opplag"], "Colecionável fora de linha": ["Discontinued collectible", "Utgått samleobjekt"],
   "Últimas unidades": ["Last units", "Siste eksemplarer"], "fora de linha": ["discontinued", "utgått"], "Clássico dos anos 2000": ["2000s classic", "2000-tallsklassiker"],
@@ -3169,7 +3188,7 @@ function i18nText(n) {
   if (!p || p.closest(I18N_SKIP)) return;
   let rec = TXT.get(n);
   if (!rec || n.nodeValue !== rec.out) rec = { orig: n.nodeValue };
-  rec.out = LANG === "pt" ? rec.orig : tr(rec.orig);
+  rec.out = convertPrices(LANG === "pt" ? rec.orig : tr(rec.orig));
   if (n.nodeValue !== rec.out) n.nodeValue = rec.out;
   TXT.set(n, rec);
 }
@@ -3180,7 +3199,7 @@ function i18nAttrs(el) {
     const all = ATTR.get(el) || {}, cur = el.getAttribute(a);
     let rec = all[a];
     if (!rec || cur !== rec.out) rec = { orig: cur };
-    rec.out = LANG === "pt" ? rec.orig : tr(rec.orig);
+    rec.out = convertPrices(LANG === "pt" ? rec.orig : tr(rec.orig));
     if (cur !== rec.out) el.setAttribute(a, rec.out);
     all[a] = rec; ATTR.set(el, all);
   }
@@ -3195,7 +3214,6 @@ function i18nNode(root) {
   root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(i18nAttrs);
 }
 const i18nObserver = new MutationObserver(list => {
-  if (LANG === "pt") return;
   for (const m of list) m.addedNodes.forEach(i18nNode);
 });
 
