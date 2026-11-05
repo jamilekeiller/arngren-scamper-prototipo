@@ -1287,7 +1287,6 @@ function init() {
     sel.insertAdjacentHTML("beforeend", `<option>${cat}</option>`);
     fCats.insertAdjacentHTML("beforeend", `<label class="check"><input type="checkbox" value="${cat}" onchange="applyFilters()"> ${cat}</label>`);
   });
-  menu.insertAdjacentHTML("beforeend", `<li><button class="cat" data-tab="comm" onclick="setMode('comm')">Comunidade</button></li>`);
   document.getElementById("footCats").innerHTML = Object.keys(CATEGORIES).map(c => `<a href="#" onclick="filterCat('${c}');return false;">${c}</a>`).join(" · ");
   [...new Set(P.map(p => p.brand))].sort().forEach(b =>
     document.getElementById("fBrands").insertAdjacentHTML("beforeend", `<label class="check"><input type="checkbox" value="${b}" onchange="applyFilters()"> ${b}</label>`));
