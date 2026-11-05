@@ -1723,7 +1723,7 @@ function likeProject(id) {
 }
 function postHTML([author, text, role], i) {
   return `<div class="post"><div class="user"><b>${escapeHTML(author)}</b><br>
-    ${role === "staff" ? '<span class="staff">EQUIPE ARNGREN</span>' : `<small>${rankOf(author)}</small>`}
+    ${role === "staff" ? '<span class="staff">EQUIPE ARNGREN</span>' : ""}
     <div class="avatar">${role === "staff" ? "🛠" : "👤"}</div></div>
     <div class="text"><small class="post-meta">mensagem #${i + 1}</small><p>${escapeHTML(text)}</p></div></div>`;
 }
