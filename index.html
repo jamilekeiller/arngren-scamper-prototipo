@@ -2065,7 +2065,7 @@ function resetChat() {
 function closeChat() { document.getElementById("chat").classList.remove("show"); document.getElementById("aiFab").hidden = false; }
 function addMsg(who, html) {
   const log = document.getElementById("chatLog");
-  const name = who === "bot" ? TL("Volt diz:", "Volt says:", "Volt sier:") : TL("Você diz:", "You say:", "Du sier:");
+  const name = who === "bot" ? "Volt" : TL("Você", "You", "Du");
   log.insertAdjacentHTML("beforeend", `<div class="msg ${who}">${who === "bot" ? '<span class="msg-av">' + MASCOT + "</span>" : ""}<span class="who">${name}</span>${html}</div>`);
   log.scrollTop = log.scrollHeight;
 }
