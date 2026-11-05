@@ -1798,7 +1798,6 @@ function renderComm(view, arg) {
       <div class="box sc-box"><h2 class="box-title">Comunidade <span class="sc">P · Portal interativo</span></h2><div class="box-body"><ul class="side-links">
         ${links.map(([v, l]) => `<li><button onclick="renderComm('${v}')" ${commView === v ? 'style="font-weight:bold"' : ""}>${l}</button></li>`).join("")}
       </ul></div></div>
-      ${profileBox()}
       <div class="box"><h2 class="box-title">Quem está online</h2><div class="box-body"><small><b>128</b> membros online:<br>PilotoNoruega, Kari_FPV, VaporVintage, Lucas_Bots, Ana.Modelista e <b style="color:#002966">Equipe ARNGREN</b></small></div></div>
       <div class="box"><h2 class="box-title">Loja</h2><div class="box-body"><button class="btn btn-block" onclick="setMode('shop')">« Voltar para a loja</button></div></div>
     </aside>
@@ -2637,7 +2636,6 @@ function myStats() {
   return { g, posts, pts, lvl, next };
 }
 function rankOf(author) {
-  if (author === nick() && author !== "Visitante") { const s = myStats(); return s.lvl === "Mestre" ? "🏅 Mestre" : s.lvl === "Montador" ? "Montador ★★" : "Iniciante ★"; }
   return RANKS[author] || "Iniciante ★";
 }
 function profileBox() {
@@ -2655,7 +2653,7 @@ function completeGuide(id) {
   const g = store.get("arn_guides", []);
   if (!g.includes(id)) store.set("arn_guides", [...g, id]);
   closeAll();
-  toast("Guia concluído! 🎉", "Você ganhou uma medalha no seu perfil da comunidade.");
+  toast("Guia concluído! 🎉", "Mostre o resultado em Projetos dos membros.");
   if (document.body.classList.contains("comm")) renderComm(commView, commArg);
 }
 const EVENTS = [
@@ -2731,7 +2729,7 @@ const TOUR = [
   { sel: "#streamRows", L: "A", t: "Vitrines estilo streaming", d: "Fileiras horizontais por categoria." },
   { sel: "#aiFab", L: "A", t: "Volt, o assistente virtual", d: "Encontra produtos pela finalidade, orçamento, tamanho e potência." },
   { sel: "#modeMag", L: "P", t: "Catálogo digital e Vitrine 3D", d: "Revista digital e vitrine 3D para colecionadores de itens raros." },
-  { sel: "#modeComm", L: "P", t: "Comunidade", d: "Guias de montagem, fórum de suporte, projetos, perfis com níveis e eventos." },
+  { sel: "#modeComm", L: "P", t: "Comunidade", d: "Guias de montagem, fórum de suporte, projetos dos membros e eventos." },
   { sel: ".device-switch", L: "A", t: "Celular, tablet e computador", d: "O mesmo site se adapta a qualquer tela." },
   { sel: ".a11y-tools", L: "S · A", t: "Acessibilidade", d: "Tamanho do texto, alto contraste e modo escuro, com contraste WCAG AA." },
   { sel: ".cart-btn", L: "E", t: "Checkout em um passo", d: "Sem cadastro obrigatório: nome, e-mail, CEP e pagamento em uma tela." },
@@ -3016,7 +3014,7 @@ const I18N = {
   "Escreva sua resposta...": ["Write your reply...", "Skriv svaret ditt..."], "Enviar resposta": ["Post reply", "Send svar"], "Título": ["Title", "Tittel"], "Mensagem": ["Message", "Melding"],
   "Descreva sua dúvida ou ideia...": ["Describe your question or idea...", "Beskriv spørsmålet eller ideen din..."], "Postando como": ["Posting as", "Publiserer som"],
   "Dúvidas de suporte são respondidas pela equipe ARNGREN.": ["Support questions are answered by the ARNGREN team.", "Supportspørsmål besvares av ARNGREN-teamet."], "Publicar tópico": ["Post topic", "Publiser emne"],
-  "Enviar meu projeto": ["Submit my project", "Send inn prosjektet mitt"], "Quero ir": ["I want to go", "Jeg vil delta"], "Vou participar": ["I'm going", "Jeg deltar"],
+  "Enviar meu projeto": ["Submit my project", "Send inn prosjektet mitt"], "Guia concluído! 🎉": ["Guide finished! 🎉", "Guiden er fullført! 🎉"], "Mostre o resultado em Projetos dos membros.": ["Show off the result in Member projects.", "Vis frem resultatet i Medlemsprosjekter."], "Quero ir": ["I want to go", "Jeg vil delta"], "Vou participar": ["I'm going", "Jeg deltar"],
   "Eventos fictícios, criados para o protótipo. Mapa: © OpenStreetMap.": ["Fictional events created for the prototype. Map: © OpenStreetMap.", "Fiktive arrangementer laget for prototypen. Kart: © OpenStreetMap."], "Mapa dos eventos": ["Event map", "Kart over arrangementer"],
   "Drones e aeromodelismo": ["Drones & model aircraft", "Droner og modellfly"], "Hobbymodelismo": ["Hobby modelling", "Modellbygging"], "Eletrônica e robótica": ["Electronics & robotics", "Elektronikk og robotikk"],
   "Veículos elétricos": ["Electric vehicles", "Elkjøretøy"], "Suporte técnico ARNGREN": ["ARNGREN tech support", "ARNGREN teknisk støtte"],

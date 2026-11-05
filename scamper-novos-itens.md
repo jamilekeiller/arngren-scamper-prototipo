@@ -43,7 +43,7 @@ Se quiser, cite como exemplo dentro do item que já existe:
 * Ícones próprios, botões com brilho, fitas de "Oferta" e "Novo" nos cards, animação do produto indo para o carrinho e tela de carregamento → **M · Padronização visual**
 * Galeria de fotos com miniaturas e zoom → **A · Apresentação dos produtos para facilitar a leitura**
 * Mascote "Volt" do assistente → **A · Assistente virtual com inteligência artificial**
-* Perfis com níveis e medalhas, galeria de projetos em mosaico → **P · Portal interativo / comunidade**
+* Galeria de projetos em mosaico → **P · Portal interativo / comunidade**
 * Imagem substituta quando uma foto não carrega → **M · Padronização visual** (nenhum espaço fica vazio)
 
 ## Ferramentas só de apresentação (não entram no SCAMPER)
